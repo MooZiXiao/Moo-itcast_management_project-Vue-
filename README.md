@@ -1,29 +1,24 @@
 # itcast_management_project
 
-## Project setup
-```
-npm install
-```
+## npm install -g @vue/cli  --  下载脚手架
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## npm create 项目名称 -- 下载项目
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## 配置项目
 
-### Run your tests
-```
-npm run test
-```
+- ### 删除不需要的文件、图片 -- Helloword.vue等
 
-### Lints and fixes files
-```
-npm run lint
-```
+- ### 删除对应的代码
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- ### 将myfonts文件夹及图片加到assets文件夹中
+
+- ### 将styles文件夹加到src文件夹中
+
+- ### main.js中引入index.less
+
+  ```js
+  import './styles/element.less'
+  ```
+
+  
+
