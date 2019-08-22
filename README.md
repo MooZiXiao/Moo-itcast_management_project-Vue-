@@ -17,7 +17,7 @@
 - ### main.js中引入index.less
 
   ```js
-  import './styles/element.less'
+  import './styles/index.less'
   ```
 
 ##2.封装路由
@@ -75,3 +75,161 @@
   	<router-view />
   </div>
   ```
+
+## 3.登录组件
+
+- ### 下载-引入-使用element-ui
+
+  下载  **npm i element-ui -S**
+
+  在 **main.js** 中 引入
+
+  ```js
+  import './styles/element.less'
+  import ElementUI from 'element-ui'
+  
+  Vue.use(ElementUI)
+  ```
+
+  在 **login.vue** 中 >> **element-ui  form表单 - Input输入框**
+
+  ```vue
+  <div class="login">
+      <div class="container">
+          <img src="../assets/avatar.png" class="avatar">
+        <el-form
+          :model="loginForm"
+          :rules="rules"
+          ref="loginForm"
+          class="demo-ruleForm"
+        >
+          <el-form-item prop="username">
+            <el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="myicon-user"></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input v-model="loginForm.password" placeholder="请输入密码" prefix-icon="myicon-key"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" class="login-btn" @click="login">登陆</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </div>
+  ```
+
+  ```js
+  export default {
+    data () {
+      return {
+        loginForm: {
+          username: '',
+          password: ''
+        },
+        rules: {
+          username: [
+            { required: true, message: '请输入用户名', trigger: 'blur' }
+          ],
+          password: [
+            { required: true, message: '请输入密码', trigger: 'blur' }
+          ]
+        }
+      }
+    }
+  }
+  ```
+
+  设置二次验证 -- 点击 登陆按钮
+
+  ```js
+  methods: {
+      login () {
+        this.$refs.loginForm.validate(valid => {
+          if (valid) {
+            console.log(111)
+          } else {
+            this.$message.warning('请输入必填项！')
+          }
+        })
+      }
+    }
+  ```
+
+  
+
+- ### 登录业务
+
+  - #### 封装axios
+
+    下载  **npm install axios**
+
+    创建 **utils** 文件夹，创建 **myaxios.js** 
+
+    ```
+    import axios from 'axios'
+    
+    axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
+    
+    export default axios
+    ```
+
+  - **login**组件的**axios** 请求
+
+    创建 **utils** 文件夹，创建 **loginIndex.js**
+
+    ```js
+    import axios from '@/utils/myaxios.js'
+    
+    export const login = (data) => {
+      return axios({
+        method: 'post',
+        url: 'login',
+        data
+      })
+    }
+    ```
+
+  - **login.vue** 引入并验证
+  
+    ```js
+    methods: {
+        login () {
+          this.$refs.loginForm.validate(valid => {
+            if (valid) {
+              login(this.loginForm)
+                .then(res => {
+                  if (res.data.meta.status === 200) {
+                    localStorage.setItem('itcast_login_token', res.data.data.token)
+                    this.$router.push({ name: 'home' })
+                  } else {
+                    this.$message.warning(res.data.meta.msg)
+                  }
+                })
+                .catch(() => {
+                  this.$message.error('服务器错误，请稍后再试！')
+                })
+            } else {
+              this.$message.warning('请输入必填项！')
+            }
+          })
+        }
+      }
+    ```
+  
+    
+  
+  - **导航守卫**
+  
+    在 **main.js** 中
+  
+    ```js
+    router.beforeEach((to, from, next) => {
+      let token = localStorage.getItem('itcast_login_token')
+      if (token || to.path === '/login') {
+        next()
+      } else {
+        next('/login')
+      } 
+    })
+    ```
+  
+    
