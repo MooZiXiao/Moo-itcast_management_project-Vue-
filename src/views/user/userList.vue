@@ -45,6 +45,15 @@
       </el-table-column>
     </el-table>
     <!-- 分页 -->
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="userobj.pagenum"
+      :page-sizes="[1, 2, 3, 4]"
+      :page-size="userobj.pagesize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total">
+    </el-pagination>
   </div>
 </template>
 <script>
@@ -52,6 +61,8 @@ import { getAllUsers } from '@/api/userList.js'
 export default {
   data () {
     return {
+      // 分页总记录数
+      total: 0,
       // 存储的数据
       userData: [],
       // 传入的参数
@@ -63,11 +74,23 @@ export default {
     }
   },
   methods: {
+    // 分页
+    handleSizeChange (val) {
+      this.userobj.pagesize = val
+      this.init()
+      // console.log(`每页 ${val} 条`)
+    },
+    handleCurrentChange (val) {
+      this.userobj.pagenum = val
+      this.init()
+      // console.log(`当前页: ${val}`)
+    },
     init () {
       getAllUsers(this.userobj)
         .then(res => {
           if (res.status === 200) {
             this.userData = res.data.data.users
+            this.total = res.data.data.total
           }
         })
         .catch(err => {

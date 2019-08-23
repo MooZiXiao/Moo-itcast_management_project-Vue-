@@ -691,4 +691,43 @@
   </div>
   ```
 
-- 
+- ### 分页
+
+  #### >>分页制件 -- Pagination 分页
+
+  ```html
+  <el-pagination
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+    :current-page="userData.pagenum"
+    :page-sizes="[1, 2, 3, 4]"
+    :page-size="userobj.pagesize"
+    layout="total, sizes, prev, pager, next, jumper"
+    :total="total">
+  </el-pagination>
+  ```
+
+  #### >>数据、方法设置
+
+  ```js
+  // data 设置变量
+  // 分页总记录数
+  total: 0,
+  --------------------------------------
+  // methods
+  // 分页
+  handleSizeChange (val) {
+    // 当前页显示几条
+    this.userobj.pagesize = val
+    // 调用请求
+    this.init()
+    // console.log(`每页 ${val} 条`)
+  },
+  handleCurrentChange (val) {
+    this.userobj.pagenum = val
+    this.init()
+    // console.log(`当前页: ${val}`)
+  }
+  ```
+
+  
