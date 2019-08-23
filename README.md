@@ -648,4 +648,47 @@
       </el-table-column>}
   ```
 
-  
+- ### 查询功能
+
+  #### >>封装getAllUsers请求 -- userList.vue
+
+  ```js
+    methods: {
+      init () {
+        getAllUsers(this.userobj)
+          .then(res => {
+            console.log(res)
+            if (res.status === 200) {
+              this.userData = res.data.data.users
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      }
+    },
+    mounted () {
+      this.init()
+    }
+  ```
+
+  #### >>实现查询
+
+  ```html
+  <div style="margin-top: 15px;">
+    <el-input
+      placeholder="请输入内容"
+      class="input-with-select"
+      style="width:300px;margin-right:12px;"
+      // 双向绑定传入的参数
+      v-model="userobj.query"
+      // 事件监听器
+      @input.native='init'
+    >
+      <el-button slot="append" icon="el-icon-search"></el-button>
+    </el-input>
+    <el-button type="success">添加</el-button>
+  </div>
+  ```
+
+- 

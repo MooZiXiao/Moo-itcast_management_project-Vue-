@@ -12,6 +12,8 @@
         placeholder="请输入内容"
         class="input-with-select"
         style="width:300px;margin-right:12px;"
+        v-model="userobj.query"
+        @input.native='init'
       >
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
@@ -60,18 +62,21 @@ export default {
       }
     }
   },
-  methods: {},
+  methods: {
+    init () {
+      getAllUsers(this.userobj)
+        .then(res => {
+          if (res.status === 200) {
+            this.userData = res.data.data.users
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    }
+  },
   mounted () {
-    getAllUsers(this.userobj)
-      .then(res => {
-        console.log(res)
-        if (res.status === 200) {
-          this.userData = res.data.data.users
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.init()
   }
 }
 </script>
