@@ -553,4 +553,99 @@
   </el-table>
   ```
 
+- ### 获得数据
+
+  #### >>发送请求 -- api文件夹中创建userList.js
+
+  ```js
+  import axios from '@/utils/myaxios.js'
+  
+  // 获得所有用户数据
+  export const getAllUsers = (params) => {
+      return axios({
+          url: 'users',
+          params
+      })
+  }
+  ```
+
+  #### >>引入-使用
+
+  ```js
+  import { getAllUsers } from '@/api/userList.js'
+  ----------------------------------------------
+  // 添加参数对象
+  // 传入的参数
+  userobj: {
+      query: '',
+      pagenum: 1,
+      pagesize: 3
+  }
+  ----------------------------------------------
+  mouted(){
+      getAllUsers(this.userobj)
+          .then(res => {
+          csonsole.log(res)
+      })
+          .catch(err => {
+          console.log(err)
+      })
+  }
+  ```
+
+  #### >>拦截器
+
+  > **由于 API V1 认证统一使用 Token 认证需要授权的 API ，必须在请求头中使用 `Authorization` 字段提供 `token` 令牌**
+
+  ```js
+  // 添加请求拦截器
+  axios.interceptors.request.use(function (config) {
+      // 获得token
+      let mytoken = localStorage.getItem('itcast_login_token')
+      // mytoken 存在时
+      if (mytoken) {
+        //设置请求头
+        config.headers.Authorization = mytoken
+      }
+      return config;
+    }, function (error) {
+      // 对请求错误做些什么
+      return Promise.reject(error);
+    })
+  ```
+
+  #### >>获得数据,显示数据
+
+  #####获得数据
+
+  ```js
+  // 组件一加载就触发的钩子函数
+  mounted () {
+      getAllUsers(this.userobj)
+        .then(res => {
+          console.log(res)
+          if (res.status === 200) {
+            this.userData = res.data.data.users
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+  }
+  ```
+
+  ##### 显示数据
+
+  ```html
+  <el-table-column type="index" width="50"></el-table-column>
+  	<el-table-column prop="username" label="姓名" width="120"></el-table-column>
+  	<el-table-column prop="email" label="邮箱" width="160"></el-table-column>
+  	<el-table-column prop="mobile" label="电话"></el-table-column>
+      <el-table-column label="用户状态">
+          <template slot-scope="scope">
+            <el-switch active-color="#13ce66" v-model="scope.row.mg_state" inactive-color="#ff4949"></el-switch>
+          </template>
+      </el-table-column>}
+  ```
+
   

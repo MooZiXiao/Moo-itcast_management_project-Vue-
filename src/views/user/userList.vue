@@ -3,9 +3,8 @@
     <!-- 面包屑 -->
     <el-breadcrumb separator-class="el-icon-caret-right">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>活动管理</el-breadcrumb-item>
-      <el-breadcrumb-item>活动列表</el-breadcrumb-item>
-      <el-breadcrumb-item>活动详情</el-breadcrumb-item>
+      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
+      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 搜索 + 添加按钮 -->
     <div style="margin-top: 15px;">
@@ -21,12 +20,12 @@
     <!-- 表格 -->
     <el-table border :data="userData" style="width: 100%; margin-top:15px">
       <el-table-column type="index" width="50"></el-table-column>
-      <el-table-column prop="date" label="姓名" width="120"></el-table-column>
-      <el-table-column prop="name" label="邮箱" width="160"></el-table-column>
-      <el-table-column prop="address" label="电话"></el-table-column>
+      <el-table-column prop="username" label="姓名" width="120"></el-table-column>
+      <el-table-column prop="email" label="邮箱" width="160"></el-table-column>
+      <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column label="用户状态">
-        <template>
-          <el-switch active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+        <template slot-scope="scope">
+          <el-switch active-color="#13ce66" v-model="scope.row.mg_state" inactive-color="#ff4949"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="320">
@@ -47,14 +46,33 @@
   </div>
 </template>
 <script>
+import { getAllUsers } from '@/api/userList.js'
 export default {
-  data() {
+  data () {
     return {
-      userData: [
-      ]
+      // 存储的数据
+      userData: [],
+      // 传入的参数
+      userobj: {
+        query: '',
+        pagenum: 1,
+        pagesize: 3
+      }
     }
   },
-  methods: {}
+  methods: {},
+  mounted () {
+    getAllUsers(this.userobj)
+      .then(res => {
+        console.log(res)
+        if (res.status === 200) {
+          this.userData = res.data.data.users
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
 }
 </script>
 <style lang="less" scoped>
