@@ -14,8 +14,8 @@ router.beforeEach((to, from, next) => {
   if (token || to.path === '/login') {
     next()
   } else {
-    next('/login')
-  } 
+    next({ path: '/login' })
+  }
 })
 
 new Vue({

@@ -199,6 +199,7 @@
                 .then(res => {
                   if (res.data.meta.status === 200) {
                     localStorage.setItem('itcast_login_token', res.data.data.token)
+                    // 需创建 home 组件
                     this.$router.push({ name: 'home' })
                   } else {
                     this.$message.warning(res.data.meta.msg)
@@ -215,7 +216,33 @@
       }
     ```
   
+  - 在 views 文件夹中创建 **home.vue**
+  
+    ```vue
+    <template>
+        <div class="home">
+            首页
+        </div>
+    </template>
+    <script>
+    export default {
+        
+    }
+    </script>
+    <style lang="less" scoped>
     
+    </style>
+    ```
+  
+  - 添加路由 **/router.js**
+  
+    ```js
+    {
+      name: 'home',
+      path: '/home',
+      component: Home
+    }
+    ```
   
   - **导航守卫**
   
@@ -227,9 +254,193 @@
       if (token || to.path === '/login') {
         next()
       } else {
-        next('/login')
+        next({ path: '/login' })
       } 
     })
     ```
   
+
+##4.后台home组件的制作 
+
+- ### element-ui 搭建
+
+  #### >>Container 布局容器
+
+  ```html
+  <el-container>
+    <!-- 左边菜单项 -->
+    <el-aside width="200px">Aside</el-aside>
+    <el-container>
+      <!-- 头部 -->
+      <el-header>Header</el-header>
+      <!-- 坑 -->
+      <el-main>Main</el-main>
+    </el-container>
+  </el-container>
+  ```
+
+  ####>>NavMenu 导航菜单
+
+  **unique-opened  是否只保持一个子菜单的展开  boolean**
+
+  **router  是否使用 vue-router 的模式，启用该模式会在激活导航时以 index 作为 path 进行路由跳转    boolean**
+
+  ```html
+  <!-- 左边菜单项 -->
+  <el-aside width="200px">
+      <el-menu
+               :router='true'
+               :unique-opened='true'
+               class="el-menu-vertical-demo"
+               @open="handleOpen"
+               @close="handleClose"
+               background-color="#545c64"
+               text-color="#fff"
+               active-text-color="#ffd04b"
+               >
+          <el-submenu index="1">
+              <template slot="title">
+                  <i class="el-icon-location"></i>
+                  <span>用户管理</span>
+              </template>
+              <el-menu-item index="1-1">用户列表</el-menu-item>
+              <el-menu-item index="1-2">选项2</el-menu-item>
+          </el-submenu>
+          <el-submenu index="2">
+              <template slot="title">
+                  <i class="el-icon-location"></i>
+                  <span>导航二</span>
+              </template>
+              <el-menu-item index="2-1">选项1</el-menu-item>
+              <el-menu-item index="2-2">选项2</el-menu-item>
+          </el-submenu>
+      </el-menu>
+  </el-aside>
+  ```
+
+  - 设置 icon图标 - 加入logo
+
+    部分代码
+
+    ```html
+    <h1><a href="javascript:;">LOGO</a></h1>
+    -------------------------------------------------
+    <el-submenu index="1">
+        <template slot="title">
+          <i class="el-icon-menu"></i>
+          <span>用户管理</span>
+        </template>
+          <el-menu-item index="1-1">
+            <template slot="title">
+              <i class="el-icon-check"></i>
+              <span>用户列表</span>
+            </template>
+          </el-menu-item>
+          <el-menu-item index="1-2">
+            <template slot="title">
+              <i class="el-icon-check"></i>
+              <span>选项2</span>
+            </template>
+          </el-menu-item>
+      </el-submenu>
+    ```
+
     
+
+  - 设置对应样式
+
+    ```css
+    .home {
+      height: 100%;
+      .el-menu-admin:not(.el-menu--collapse) {
+        width: 200px;
+        min-height: 400px;
+      }
+      .el-container {
+        height: 100%;
+      }
+      .el-aside {
+        background-color: #545c64;
+      }
+      .el-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #545c64;
+      }
+      h1 a{
+        display: block;
+        width: 200px;
+        height: 59px;
+        text-indent: -9999px;
+        background: url('../assets/logo.png') -20px,#fff ;
+        background-size: 240px 59px;
+        &:hover {
+          background-color: #f1f1f1;
+        }
+      }
+      .toggle-btn {
+        padding: 0 15px;
+        margin-left: -20px;
+        font-size: 36px;
+        color: white;
+        cursor: pointer;
+        line-height: 60px;
+        &:hover {
+          background-color: #4292CF;
+        }
+      }
+      .system-title {
+        font-size: 28px;
+        color: white;
+      }
+      .exit{
+        color: white;
+      }
+    }
+    ```
+
+  - ### 头部部分
+
+    ```html
+    <el-header>
+      <a href="javascript:;" class="toggle-btn myicon-menu"></a>
+      <h2 class="system-title">木一了后台管理</h2>
+      <a href="javascript:;" class="exit">退出</a>
+    </el-header>
+    ```
+
+  - ### home组件默认显示welcome组件信息
+
+    - #### 创建welcome组件
+
+      ```html
+      <template>
+          <div class="welcome">
+              欢迎来到木一了后台管理
+          </div>
+      </template>
+      <style lang="less" scoped>
+      
+      </style>
+      ```
+
+    - ### 配置路由 /router.js
+
+      ```js
+      {
+        name: 'home',
+        path: '/home',
+        component: Home,
+        redirect: { name: 'welcome' },
+        children: [
+          {
+            name: 'welcome',
+            path: 'welcome',
+            component: Welcome
+          }
+        ]
+      }
+      ```
+
+      
