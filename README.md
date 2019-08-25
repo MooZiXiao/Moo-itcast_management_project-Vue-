@@ -873,4 +873,97 @@
   }
   ```
 
+- ### 用户编辑
+
+  **思想: **
+
+  **点击当前行的编辑按钮**
+
+  **显示dialog对话框（则需先添加对应的对话框）**
+
+  **通过自定义模板的slot-scope属性的scope来获得当前行数据，创建显示接口**
+
+  **将对应的数据显示在对话框中**
+
+  **设置对话框中输入的数据的验证**
+
+  **创建编辑接口**
+
+  **设置编辑点击事件调用接口，二次验证数据**
+
+  **编辑成功关闭对话框，更新页面**
+
+  #### >>编辑对话框设置 -- userList.vue
+
+  ```html
+  <el-dialog title="编辑用户" :visible.sync="editDialogFormVisible">
+    <el-form :model="editform" :label-width="'80px'" :rules='rules' ref="editform">
+      <el-form-item label="用户名">
+        <el-input v-model="editform.username" auto-complete="off" disabled style='width:88px'></el-input>
+      </el-form-item>
+      <el-form-item label="邮箱" prop='email'>
+        <el-input v-model="editform.email" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="手机号" prop='mobile'>
+        <el-input v-model="editform.mobile" auto-complete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="editDialogFormVisible = false">取 消</el-button>
+      <el-button type="primary" @click="editUser">确 定</el-button>
+    </div>
+  </el-dialog>
+  ```
+
+  #### >>调用显示对话框方法（传参 -- scope.row）-- userList.vue -- methods
+
+  ```js
+  showEditDialog (row) {
+    // 显示对话框
+    this.editDialogFormVisible = true
+    // 显示对应数据
+    this.editform.username = row.username
+    this.editform.id = row.id
+    this.editform.email = row.email
+    this.editform.mobile = row.mobile
+  }
+  ```
+
+  #### >>设置编辑接口 -- userList.js
+
+  ```js
+  export const editUser = (data) => {
+    return axios({
+      method: 'put',
+      url: `users/${data.id}`,
+      data: { email: data.email, mobile: data.mobile }
+    })
+  }
+  ```
+
+  #### >>二次验证，调用编辑接口 -- userList.vue -- methods
+
+  ```js
+  // 编辑用户
+  editUser () {
+    this.$refs.editform.validate(valid => {
+      if (valid) {
+        editUser(this.editform)
+          .then(res => {
+            console.log(res)
+            if (res.data.meta.status === 200) {
+              this.$message.success(res.data.meta.msg)
+              this.init()
+              this.editDialogFormVisible = false
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
+          })
+      } else {
+        this.$message.warning('请输入必填项')
+      }
+    })
+  }
+  ```
+
   

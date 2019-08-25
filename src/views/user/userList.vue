@@ -36,7 +36,7 @@
             <el-button type="primary" plain icon="el-icon-edit"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配" placement="top-start">
-            <el-button type="info" plain icon="el-icon-plus"></el-button>
+            <el-button type="info" plain icon="el-icon-plus" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
             <el-button type="warning" plain icon="el-icon-delete"></el-button>
@@ -75,13 +75,39 @@
         <el-button type="primary" @click="addUser">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 编辑对话框 -->
+    <el-dialog title="编辑用户" :visible.sync="editDialogFormVisible">
+      <el-form :model="editform" :label-width="'80px'" :rules='rules' ref="editform">
+        <el-form-item label="用户名">
+          <el-input v-model="editform.username" auto-complete="off" disabled style='width:88px'></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop='email'>
+          <el-input v-model="editform.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop='mobile'>
+          <el-input v-model="editform.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUser">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers, addUser, updateUserState } from '@/api/userList.js'
+import { getAllUsers, addUser, updateUserState, editUser } from '@/api/userList.js'
 export default {
   data () {
     return {
+      // 编辑对话框
+      editDialogFormVisible: false,
+      // 编辑数据对象
+      editform: {
+        id: '',
+        email: '',
+        mobile: ''
+      },
       // 添加dialog boolean
       addDialogFormVisible: false,
       // 添加的数据对象
@@ -111,6 +137,36 @@ export default {
     }
   },
   methods: {
+    // 编辑用户
+    editUser () {
+      this.$refs.editform.validate(valid => {
+        if (valid) {
+          editUser(this.editform)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 200) {
+                this.$message.success(res.data.meta.msg)
+                this.init()
+                this.editDialogFormVisible = false
+              } else {
+                this.$message.error(res.data.meta.msg)
+              }
+            })
+        } else {
+          this.$message.warning('请输入必填项')
+        }
+      })
+    },
+    // 显示对话框
+    showEditDialog (row) {
+      // 显示对话框
+      this.editDialogFormVisible = true
+      // 显示对应数据
+      this.editform.username = row.username
+      this.editform.id = row.id
+      this.editform.email = row.email
+      this.editform.mobile = row.mobile
+    },
     // 修改用户状态
     updateUserState (type, id) {
       updateUserState(type, id)

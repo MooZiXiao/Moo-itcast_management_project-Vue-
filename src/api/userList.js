@@ -24,3 +24,12 @@ export const updateUserState = (type, id) => {
     url: `users/${id}/state/${type}`
   })
 }
+
+// 修改用户
+export const editUser = (data) => {
+  return axios({
+    method: 'put',
+    url: `users/${data.id}`,
+    data: { email: data.email, mobile: data.mobile }
+  })
+}
