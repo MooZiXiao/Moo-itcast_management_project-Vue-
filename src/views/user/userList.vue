@@ -33,10 +33,10 @@
       <el-table-column label="操作" width="320">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top-start">
-            <el-button type="primary" plain icon="el-icon-edit"></el-button>
+            <el-button type="primary" plain icon="el-icon-edit" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分配" placement="top-start">
-            <el-button type="info" plain icon="el-icon-plus" @click="showEditDialog(scope.row)"></el-button>
+            <el-button type="info" plain icon="el-icon-plus" @click="showGrantDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
             <el-button type="warning" plain icon="el-icon-delete"></el-button>
@@ -93,13 +93,46 @@
         <el-button type="primary" @click="editUser">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 分配对话框 -->
+    <el-dialog title="分配角色" :visible.sync="grantDialogFormVisible">
+      <el-form :model="grantform" :label-width="'80px'">
+        <el-form-item label="用户名">
+          <el-input v-model="grantform.username" auto-complete="off" disabled style="width:80px"></el-input>
+        </el-form-item>
+        <el-form-item label="选择">
+        <el-select v-model="grantform.rid" clearable placeholder="请选择">
+          <el-option
+            v-for="item in roleList"
+            :key="item.value"
+            :label="item.roleName"
+            :value="item.id">
+          </el-option>
+        </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="grantDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="updateUserRole">确 定</el-button>
+      </div>
+  </el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers, addUser, updateUserState, editUser } from '@/api/userList.js'
+import { getAllUsers, addUser, updateUserState, editUser, updateUserRole } from '@/api/userList.js'
+import { getAllRoles } from '@/api/roleIndex.js'
 export default {
   data () {
     return {
+      // 所有角色显示的数据
+      roleList: [],
+      // 分配角色对话框
+      grantDialogFormVisible: false,
+      // 分配角色数据对象
+      grantform: {
+        username: '',
+        id: '',
+        rid: ''
+      },
       // 编辑对话框
       editDialogFormVisible: false,
       // 编辑数据对象
@@ -137,6 +170,31 @@ export default {
     }
   },
   methods: {
+    // 修改角色
+    updateUserRole () {
+      if (this.grantform.rid) {
+        updateUserRole(this.grantform)
+          .then(res => {
+            if (res.data.meta.status === 200) {
+              this.$message.success(res.data.meta.msg)
+              this.grantDialogFormVisible = false
+              this.init()
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
+          })
+      }
+    },
+    // 显示分配角色对话框
+    showGrantDialog (row) {
+      console.log(row)
+      // 显示对话框
+      this.grantDialogFormVisible = true
+      // 显示对应数据
+      this.grantform.id = row.id
+      this.grantform.rid = row.role_id
+      this.grantform.username = row.username
+    },
     // 编辑用户
     editUser () {
       this.$refs.editform.validate(valid => {
@@ -242,6 +300,15 @@ export default {
   },
   mounted () {
     this.init()
+    getAllRoles()
+      .then(res => {
+        if (res.data.meta.status === 200) {
+          this.roleList = res.data.data
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 }
 </script>

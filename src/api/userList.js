@@ -33,3 +33,12 @@ export const editUser = (data) => {
     data: { email: data.email, mobile: data.mobile }
   })
 }
+
+// 分配角色
+export const updateUserRole = (data) => {
+  return axios({
+    method: 'put',
+    url: `users/${data.id}/role`,
+    data: { rid: data.rid }
+  })
+}

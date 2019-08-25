@@ -966,4 +966,115 @@
   }
   ```
 
+- ### 分配角色
+
+  **思想 **
+
+  **点击分配按钮，显示对话框**
+
+  **对话框中显示用户名及角色选择**
+
+  **角色选择需要设置获取所有角色接口**
+
+  **通过组件一加载便调用获取所有角色的接口，使之显示在对应对话框中**
+
+  **设置分配角色修改的接口**
+
+  **通过点击调用，成功关闭对话框并更新页面**
+
+  #### >>设置对话框 -- userList.vue
+
+  ```html
+  <el-dialog title="分配角色" :visible.sync="grantDialogFormVisible">
+    <el-form :model="grantform" :label-width="'80px'">
+      <el-form-item label="用户名">
+        <el-input v-model="grantform.username" auto-complete="off" disabled style="width:80px"></el-input>
+      </el-form-item>
+      <el-form-item label="选择">
+      <el-select v-model="grantform.rid" clearable placeholder="请选择">
+        <el-option
+          v-for="item in roleList"
+          :key="item.value"
+          :label="item.roleName"
+          :value="item.id">
+        </el-option>
+      </el-select>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="grantDialogFormVisible = false">取 消</el-button>
+      <el-button type="primary" @click="updateUserRole">确 定</el-button>
+    </div>
+  </el-dialog>
+  ```
+
+  #### >>设置获得所有角色接口 -- /api/roleIndex.js
+
+  ```js
+  export const getAllRoles = () => {
+    return axios({
+      url: 'roles'
+    })
+  }
+  ```
+
+  #### >>调用获得所有角色接口 -- userList.vue -- mounted
+
+  ```js
+  getAllRoles()
+    .then(res => {
+      if (res.data.meta.status === 200) {
+        this.roleList = res.data.data
+      }
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  ```
+
+  #### >>在对话框显示对应数据  -- userList.vue -- methods
+
+  ```js
+  // 显示分配角色对话框
+  showGrantDialog (row) {
+    // 显示对话框
+    this.grantDialogFormVisible = true
+    // 显示对应数据
+    this.grantform.id = row.id
+    this.grantform.rid = row.role_id
+    this.grantform.username = row.username
+  }
+  ```
+
+  #### >>设置分配角色接口  -- userList.js
+
+  ```js
+  export const updateUserRole = (data) => {
+    return axios({
+      method: 'put',
+      url: `users/${data.id}/role`,
+      data: { rid: data.rid }
+    })
+  }
+  ```
+
+  #### >>调用接口，实现分配角色 -- userList.vue -- methods
+
+  ```js
+  updateUserRole () {
+    if (this.grantform.rid) {
+      updateUserRole(this.grantform)
+        .then(res => {
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            this.grantDialogFormVisible = false
+            this.init()
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
+    }
+  }
+  ```
+
   
