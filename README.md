@@ -279,7 +279,7 @@
   </el-container>
   ```
 
-  ####>>NavMenu 导航菜单
+  #### >>NavMenu 导航菜单
 
   **unique-opened  是否只保持一个子菜单的展开  boolean**
 
@@ -513,7 +513,7 @@
   </el-breadcrumb>
   ```
 
-  ####>> 搜索 + 添加按钮 -- Input 输入框 + Button 按钮
+  #### >> 搜索 + 添加按钮 -- Input 输入框 + Button 按钮
 
   ```html
   <div style="margin-top: 15px;">
@@ -1073,7 +1073,88 @@
             this.$message.error(res.data.meta.msg)
           }
         })
+    } else {
+      this.$message.warning('请选择角色')
     }
+}
+  ```
+
+- #### 单个用户删除
+
+  **思想**
+
+  **点击删除按钮，弹出提示框**
+
+  **按确定删除用户，则需通过自定义模板的scope获得当行数据**
+
+  **设置删除接口，绑定删除方法，传入参数id,调用删除接口**
+
+  **成功提示并更新页面**
+
+  #### >>设置提示 -- MessageBox 弹框 -- userList.vue -- methods
+
+  ```js
+  
+  this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    this.$message({
+      type: 'success',
+      message: '删除成功!'
+    });
+  }).catch(() => {
+    this.$message({
+      type: 'info',
+      message: '已取消删除'
+    })        
+  })
+  ```
+
+  #### >>删除接口 -- userList.js
+
+  ```js
+  // 删除单个用户
+  export const delUserById = (id) => {
+    return axios({
+      method: 'delete',
+      url: `users/${id}`
+    })
+  }
+  ```
+
+  #### >>调用删除接口
+
+  ```js
+  // 删除用户
+  delUserById (row) {
+    this.$confirm('此操作将永久删除用户, 是否继续?', '删除提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      delUserById(row.id)
+        .then(res => {
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            // 分页的显示
+            if (this.userData.length === 1) {
+              if (this.userobj.pagenum > 1) {
+                this.userobj.pagenum--
+                this.init()
+              }
+            }
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
+    }).catch(() => {
+      this.$message({
+        type: 'info',
+        message: '已取消删除'
+      })
+    })
   }
   ```
 

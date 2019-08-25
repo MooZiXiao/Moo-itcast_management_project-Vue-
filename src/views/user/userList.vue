@@ -39,7 +39,7 @@
             <el-button type="info" plain icon="el-icon-plus" @click="showGrantDialog(scope.row)"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
-            <el-button type="warning" plain icon="el-icon-delete"></el-button>
+            <el-button type="warning" plain icon="el-icon-delete" @click="delUserById(scope.row)"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -118,7 +118,7 @@
   </div>
 </template>
 <script>
-import { getAllUsers, addUser, updateUserState, editUser, updateUserRole } from '@/api/userList.js'
+import { getAllUsers, addUser, updateUserState, editUser, updateUserRole, delUserById } from '@/api/userList.js'
 import { getAllRoles } from '@/api/roleIndex.js'
 export default {
   data () {
@@ -170,6 +170,35 @@ export default {
     }
   },
   methods: {
+    // 删除用户
+    delUserById (row) {
+      this.$confirm('此操作将永久删除用户, 是否继续?', '删除提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delUserById(row.id)
+          .then(res => {
+            if (res.data.meta.status === 200) {
+              this.$message.success(res.data.meta.msg)
+              // 分页的显示
+              if (this.userData.length === 1) {
+                if (this.userobj.pagenum > 1) {
+                  this.userobj.pagenum--
+                  this.init()
+                }
+              }
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
     // 修改角色
     updateUserRole () {
       if (this.grantform.rid) {
@@ -183,11 +212,12 @@ export default {
               this.$message.error(res.data.meta.msg)
             }
           })
+      } else {
+        this.$message.warning('请选择角色')
       }
     },
     // 显示分配角色对话框
     showGrantDialog (row) {
-      console.log(row)
       // 显示对话框
       this.grantDialogFormVisible = true
       // 显示对应数据
@@ -229,7 +259,6 @@ export default {
     updateUserState (type, id) {
       updateUserState(type, id)
         .then(res => {
-          console.log(res)
           if (res.data.meta.status === 200) {
             this.$message.success(res.data.meta.msg)
             this.init()

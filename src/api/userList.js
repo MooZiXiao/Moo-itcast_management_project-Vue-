@@ -42,3 +42,11 @@ export const updateUserRole = (data) => {
     data: { rid: data.rid }
   })
 }
+
+// 删除单个用户
+export const delUserById = (id) => {
+  return axios({
+    method: 'delete',
+    url: `users/${id}`
+  })
+}
