@@ -831,6 +831,46 @@
     })
   }
   ```
-  
-  
 
+- ###  用户状态修改
+
+  **思想：设置接口，点击swith开关，通过change事件返回新的状态值，调用接口传入参数，实现修改**
+
+  #### >>设置接口 - userList.js
+
+  ```js
+  // 修改用户状态
+  export const updateUserState = (type, id) => {
+    return axios({
+      method: 'put',
+      url: `users/${id}/state/${type}`
+    })
+  }
+  ```
+
+  #### >>设置点击方法(传参)并调用接口
+
+  ```html
+  <el-switch active-color="#13ce66" v-model="scope.row.mg_state" inactive-color="#ff4949" @change="updateUserState(scope.row.mg_state, scope.row.id)"></el-switch>
+  ```
+
+  ```js
+  // 修改用户状态
+  updateUserState (type, id) {
+    updateUserState(type, id)
+      .then(res => {
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.$message.success(res.data.meta.msg)
+          this.init()
+        } else {
+          this.$message.error(res.data.meta.msg)
+        }
+      })
+      .catch(() => {
+        this.$message.error('用户状态修改失败')
+      })
+  }
+  ```
+
+  

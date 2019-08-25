@@ -27,7 +27,7 @@
       <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column label="用户状态">
         <template slot-scope="scope">
-          <el-switch active-color="#13ce66" v-model="scope.row.mg_state" inactive-color="#ff4949"></el-switch>
+          <el-switch active-color="#13ce66" v-model="scope.row.mg_state" inactive-color="#ff4949" @change="updateUserState(scope.row.mg_state, scope.row.id)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="320">
@@ -78,7 +78,7 @@
   </div>
 </template>
 <script>
-import { getAllUsers, addUser } from '@/api/userList.js'
+import { getAllUsers, addUser, updateUserState } from '@/api/userList.js'
 export default {
   data () {
     return {
@@ -111,6 +111,22 @@ export default {
     }
   },
   methods: {
+    // 修改用户状态
+    updateUserState (type, id) {
+      updateUserState(type, id)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+            this.init()
+          } else {
+            this.$message.error(res.data.meta.msg)
+          }
+        })
+        .catch(() => {
+          this.$message.error('用户状态修改失败')
+        })
+    },
     // 显示添加dialog
     showAddDialog () {
       this.addDialogFormVisible = true

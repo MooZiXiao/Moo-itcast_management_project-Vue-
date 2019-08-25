@@ -16,3 +16,11 @@ export const addUser = (data) => {
     data
   })
 }
+
+// 修改用户状态
+export const updateUserState = (type, id) => {
+  return axios({
+    method: 'put',
+    url: `users/${id}/state/${type}`
+  })
+}
