@@ -12,7 +12,7 @@
           <el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="myicon-user"></el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="loginForm.password" placeholder="请输入密码" prefix-icon="myicon-key"></el-input>
+          <el-input v-model="loginForm.password" placeholder="请输入密码" prefix-icon="myicon-key" @keypress.enter.native="login"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" class="login-btn" @click="login">登陆</el-button>
@@ -67,7 +67,7 @@ export default {
   position: fixed;
   width: 100%;
   height: 100%;
-  background-color: rgb(47, 64, 80);
+  background-color:#fff;
   .container {
     position: absolute;
     left: 0;
@@ -75,7 +75,9 @@ export default {
     width: 400px;
     padding: 0px 40px 15px 40px;
     margin: 200px auto;
-    background: white;
+    background: #249bb9;
+    border: 1px solid #f1f1f1;
+    box-shadow: 0 0 10px #f1f1f1;
     .avatar {
       position: relative;
       left: 50%;
@@ -85,13 +87,14 @@ export default {
       margin-top: -60px;
       box-sizing: border-box;
       border-radius: 50%;
-      border: 10px solid #fff;
-      box-shadow: 0 1px 5px #ccc;
+      border: 10px solid #249bb9;
+      box-shadow: 0 1px 15px #ccc;
       overflow: hidden;
       margin-bottom: 20px;
     }
     .login-btn {
       width: 100%;
+      background:#056d86;
     }
   }
 }

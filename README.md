@@ -20,7 +20,7 @@
   import './styles/index.less'
   ```
 
-##2.封装路由
+## 2.封装路由
 
 - ### 创建login.vue
 
@@ -260,7 +260,7 @@
     ```
   
 
-##4.后台home组件的制作 
+## 4.后台home组件的制作 
 
 - ### element-ui 搭建
 
@@ -730,4 +730,107 @@
   }
   ```
 
+- ### 用户添加
+
+  **思想：**
+
+  **首先需要点击‘添加’按钮**
+
+  **然后按钮显示出添加dialog**
+
+  **填入数据，通过表单rules验证数据**
+
+  **点击dialog的确认按钮则需要进入二次验证输入的数据**
+
+  **且调用添加用户的接口**
+
+  **成功则给出对应提示，更新页面并重置表单**
+
+  #### >>添加dialog - Dialog 对话框
+
+  **加入dialog后还需要对表单加入验证等操作**
   
+  ```html
+  <el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
+    <el-form :model="addform" :label-width="'80px'" ref='addform' :rules='rules'>
+      <el-form-item label="用户名称" prop='username'>
+        <el-input v-model="addform.username" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="用户密码" prop='password'>
+        <el-input v-model="addform.password" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="邮箱" prop='email'>
+        <el-input v-model="addform.email" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="手机号" prop='mobile'>
+        <el-input v-model="addform.mobile" auto-complete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="addDialogFormVisible = false">取 消</el-button>
+      <el-button type="primary" @click="addUser">确 定</el-button>
+    </div>
+</el-dialog>
+  ```
+
+  #### ＞＞对应data数据
+
+  ```js
+  // 添加dialog boolean
+  addDialogFormVisible: false,
+  // 添加的数据对象
+  addform: {
+  	username: '',
+  	password: '',
+  	email: '',
+  	mobile: ''
+  },
+  // 验证规则
+  rules: {
+  	username: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
+  	password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+  	email: [{ pattern: /\w+[@]+\w+[.]+\w+/, message: '请输入正确的邮箱', trigger: 'blur' }],
+  	mobile: [{ pattern: /^1\d{10}$/, message: '请输入正确的手机号码', trigger: 'blur' }]
+  }
+  ```
+  
+  #### >>设置添加接口 - userList.js
+  
+  ```js
+  // 添加用户
+  export const addUser = (data) => {
+    return axios({
+      method: 'post',
+      url: 'users',
+      data
+    })
+  }
+  ```
+  
+  #### >>二次验证+(引入)调用接口 -- 实现添加
+  
+  ```js
+  addUser () {
+    // 二次验证
+    this.$refs.addform.validate(valid => {
+      if (valid) {
+        addUser(this.addform)
+          .then(res => {
+            if (res.data.meta.status === 201) {
+              this.$message.success(res.data.meta.msg)
+              this.addDialogFormVisible = false
+              this.init()
+              this.$refs.addform.resetFields()
+            } else {
+              this.$message.error(res.data.meta.msg)
+            }
+          })
+      } else {
+        this.$message.warning('请输入必填项！')
+      }
+    })
+  }
+  ```
+  
+  
+

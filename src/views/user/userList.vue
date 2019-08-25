@@ -17,7 +17,7 @@
       >
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
-      <el-button type="success">添加</el-button>
+      <el-button type="success" @click="showAddDialog">添加</el-button>
     </div>
     <!-- 表格 -->
     <el-table border :data="userData" style="width: 100%; margin-top:15px">
@@ -54,13 +54,50 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total">
     </el-pagination>
+    <!-- 添加dialog -->
+    <el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
+      <el-form :model="addform" :label-width="'80px'" ref='addform' :rules='rules'>
+        <el-form-item label="用户名称" prop='username'>
+          <el-input v-model="addform.username" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="用户密码" prop='password'>
+          <el-input v-model="addform.password" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop='email'>
+          <el-input v-model="addform.email" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop='mobile'>
+          <el-input v-model="addform.mobile" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addCancel">取 消</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers } from '@/api/userList.js'
+import { getAllUsers, addUser } from '@/api/userList.js'
 export default {
   data () {
     return {
+      // 添加dialog boolean
+      addDialogFormVisible: false,
+      // 添加的数据对象
+      addform: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: ''
+      },
+      // 验证规则
+      rules: {
+        username: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+        email: [{ pattern: /\w+[@]+\w+[.]+\w+/, message: '请输入正确的邮箱', trigger: 'blur' }],
+        mobile: [{ pattern: /^1\d{10}$/, message: '请输入正确的手机号码', trigger: 'blur' }]
+      },
       // 分页总记录数
       total: 0,
       // 存储的数据
@@ -74,6 +111,39 @@ export default {
     }
   },
   methods: {
+    // 显示添加dialog
+    showAddDialog () {
+      this.addDialogFormVisible = true
+    },
+    // 添加用户
+    addUser () {
+      // 二次验证
+      this.$refs.addform.validate(valid => {
+        if (valid) {
+          addUser(this.addform)
+            .then(res => {
+              if (res.data.meta.status === 201) {
+                this.$message.success(res.data.meta.msg)
+                this.addDialogFormVisible = false
+                this.init()
+                this.$refs.addform.resetFields()
+              } else {
+                this.$message.error(res.data.meta.msg)
+              }
+            })
+            .catch(() => {
+              this.$message.error('添加失败！')
+            })
+        } else {
+          this.$message.warning('请输入必填项！')
+        }
+      })
+    },
+    // dialog取消
+    addCancel () {
+      this.addDialogFormVisible = false
+      this.$refs.addform.resetFields()
+    },
     // 分页
     handleSizeChange (val) {
       this.userobj.pagesize = val
