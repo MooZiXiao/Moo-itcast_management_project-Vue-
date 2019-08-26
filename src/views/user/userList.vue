@@ -320,6 +320,10 @@ export default {
           if (res.status === 200) {
             this.userData = res.data.data.users
             this.total = res.data.data.total
+
+            console.log(Math.ceil(this.total / this.userobj.pagesize))
+            console.log(this.userobj.pagesize)
+            // console.log(this.userobj.pagenum)
           }
         })
         .catch(err => {
