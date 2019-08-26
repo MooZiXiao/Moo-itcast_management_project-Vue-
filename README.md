@@ -1249,3 +1249,78 @@ filters: {
 }
 ```
 
+### 6.2 角色列表
+
+#### 角色列表的数据显示
+
+```js
+import { getAllRoles } from '@/api/rolesIndex.js'
+export default {
+  data () {
+    return {
+      // 获得角色数据
+      rolesData: []
+    }
+  },
+  mounted () {
+    getAllRoles()
+      .then(res => {
+        // console.log(res)
+        if (res.data.meta.status === 200) {
+          this.rolesData = res.data.data
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+}
+```
+
+#### 角色列表权限的显示
+
+**思想**
+
+**点击表格对应列隐藏的数据显示，通过layout布局（栅栏布局）来设置显示**
+
+**通过自定义模板slot-scope属性获得当行的数据，用scope.children遍历显示一级需显示数据，**
+
+**通过first.children遍历显示二级需显示数据，用second.children遍历显示三级需显示数据**
+
+```html
+<el-table-column type="expand">
+    <template slot-scope="props">
+      <el-row v-for="first in props.row.children" :key="first.id" style="margin: 15px; border-bottom: 1px dashed #ccc">
+        <el-col :span="4">
+          <el-tag closable :type="'success'">{{ first.authName }}</el-tag>
+        </el-col>
+        <el-col :span="20">
+          <el-row v-for="second in first.children" :key="second.id">
+            <el-col :span="4">
+                <el-tag closable :type="'info'" style='margin-bottom:15px;'>{{ second.authName }}</el-tag>
+            </el-col>
+            <el-col :span="20">
+                <el-tag closable :type="'error'" v-for='third in second.children' :key='third.id' style='margin-right:8px;margin-bottom:8px'>{{ third.authName }}</el-tag>
+            </el-col>
+          </el-row>
+        </el-col>
+      </el-row>
+    </template>
+</el-table-column>
+```
+
+**组件一加载便调用显示所有角色的接口** -- rolesList.vue -- mounted
+
+```js
+getAllRoles()
+  .then(res => {
+    console.log(res)
+    if (res.data.meta.status === 200) {
+      this.rolesData = res.data.data
+    }
+  })
+  .catch(err => {
+    console.log(err)
+  })
+```
+

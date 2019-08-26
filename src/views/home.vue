@@ -133,5 +133,8 @@ export default {
   .el-menu-item.is-active {
     background-color: #044c5e !important;
   }
+  .el-submenu{
+    width: 200px !important
+  }
 }
 </style>
