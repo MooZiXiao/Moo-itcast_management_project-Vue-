@@ -1158,14 +1158,94 @@
   }
   ```
 
->**需先创建权限管理对应的组件，及路由配置**
->
->**权限列表 -- rights/rightsList.vue**
->
->**角色列表 --  rights/roles.vue**
-
 ## 6.权限管理
 
-### 6.1 显示所有权限
+> **需先创建权限管理对应的组件，及路由配置**
+>
+> **权限列表 -- rights/rightsList.vue**
+>
+> **角色列表 --  rights/roles.vue**
 
-​	   **思想**
+### 6.1 搭建right组件并显示所有权限
+
+#### 	搭建组件
+
+**面包屑 + 表格**
+
+```html
+<template>
+  <div class="rightsList">
+    <!-- 面包屑 -->
+    <el-breadcrumb separator-class="el-icon-caret-right">
+      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>权限管理</el-breadcrumb-item>
+      <el-breadcrumb-item>权限列表</el-breadcrumb-item>
+    </el-breadcrumb>
+    <!-- 表格 -->
+    <el-table :data="rightsData" border style="width: 60%">
+      <el-table-column prop="authName" label="权限名称" width="180"></el-table-column>
+      <el-table-column prop="path" label="路径" width="180"></el-table-column>
+      <el-table-column prop="level" label="层级"></el-table-column>
+    </el-table>
+  </div>
+</template>
+```
+
+#### 显示所有权限		  
+
+**思想**
+
+**创建权限api -- api/rightsIndex.js**
+
+**配置所有权限的接口 -- getAllRights**
+
+**rights组件在页面一加载时，调用该接口并显示数据**
+
+```js
+import { getAllRights } from '@/api/rightsIndex.js'
+export default {
+  data () {
+    return {
+      rightsData: []
+    }
+  },
+  mounted () {
+    getAllRights('list')
+      .then(res => {
+        if (res.data.meta.status === 200) {
+          this.rightsData = res.data.data
+        }
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+}
+```
+
+**由于层级的显示是（0 -- 一级，1 -- 二级， 2 -- 三级）**
+
+**所以需要设置层级显示，通过过滤器来设置，然而无法在对应行书写管道符，则需要通过自定义模板来设置**
+
+```html
+<el-table-column label="层级">
+  <template slot-scope="scope">
+      <span>{{scope.row.level | levelFormat}}</span>
+  </template>
+</el-table-column>
+```
+
+```js
+filters: {
+    levelFormat (level) {
+      if (level === '0') {
+        return '一级'
+      } else if (level === '1') {
+        return '二级'
+      } else if (level === '2') {
+        return '三级'
+      }
+    }
+}
+```
+
