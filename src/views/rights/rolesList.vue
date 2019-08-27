@@ -14,18 +14,21 @@
         <template slot-scope="props">
           <el-row v-for="first in props.row.children" :key="first.id" style="margin: 15px; border-bottom: 1px dashed #ccc">
             <el-col :span="4">
-              <el-tag closable :type="'success'">{{ first.authName }}</el-tag>
+              <el-tag closable :type="'warning'" @close='cnt=0;delRightOnRoleById(props.row, first.id)'>{{ first.authName }}</el-tag>
             </el-col>
             <el-col :span="20">
               <el-row v-for="second in first.children" :key="second.id">
                 <el-col :span="4">
-                    <el-tag closable :type="'info'" style='margin-bottom:15px;'>{{ second.authName }}</el-tag>
+                    <el-tag closable :type="'success'" style='margin-bottom:15px;' @close='cnt=0;delRightOnRoleById(props.row, second.id)'>{{ second.authName }}</el-tag>
                 </el-col>
                 <el-col :span="20">
-                    <el-tag closable :type="'error'" v-for='third in second.children' :key='third.id' style='margin-right:8px;margin-bottom:8px'>{{ third.authName }}</el-tag>
+                    <el-tag closable v-for='third in second.children' :key='third.id' style='margin-right:8px;margin-bottom:8px' @close='cnt=0;delRightOnRoleById(props.row, third.id)'>{{ third.authName }}</el-tag>
                 </el-col>
               </el-row>
             </el-col>
+          </el-row>
+          <el-row v-show='props.row.children.length === 0'>
+              <el-col :span='24' style='text-align:center; font-size:18px; color:rgb(56, 111, 143)'>该角色没有添加角色授权噢</el-col>
           </el-row>
         </template>
       </el-table-column>
@@ -49,12 +52,46 @@
   </div>
 </template>
 <script>
-import { getAllRoles } from '@/api/rolesIndex.js';
+import { getAllRoles, delRightOnRoleById } from '@/api/rolesIndex.js'
 export default {
   data () {
     return {
+      // 设置删除了所有级权限的提示数
+      cnt: 0,
       // 获得角色数据
       rolesData: []
+    }
+  },
+  methods: {
+    delRightOnRoleById (row, rightId) {
+      delRightOnRoleById(row.id, rightId)
+        .then(res => {
+          if (res.data.meta.status === 200) {
+            // 当删除了一级时，会提示出三条成功提示，为了让其只显示一条则做以下处理
+            // 为了重置cnt=0,则需要在各个close事件重置cnt
+            if (this.cnt === 0) {
+              this.$message.success(res.data.meta.msg)
+              this.cnt++
+            }
+            // 由于删除成功后会返回删除后对应的数据，所以可以不刷新整个表格数据，而来更新
+            row.children = res.data.data
+            // 三级所有子项删除后，二级没有移除，当一级只有一个二级时且二级的三级子项并没有子项时，应当移除一级
+            row.children.forEach(first => {
+              if (first.children.length === 0) { // 一级权限下没有二级
+                // 调用删除方法
+                this.delRightOnRoleById(row, first.id)
+              } else {
+                first.children.forEach(second => { // 二级权限下没有三级
+                  if (second.children.length === 0) {
+                    this.delRightOnRoleById(row, second.id)
+                  }
+                })
+              }
+            })
+          } else {
+            this.$message.success(res.data.meta.msg)
+          }
+        })
     }
   },
   mounted () {

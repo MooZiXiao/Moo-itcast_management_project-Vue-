@@ -1324,3 +1324,65 @@ getAllRoles()
   })
 ```
 
+**若是点开后没有角色权限，则就给出提示**
+
+```html
+<el-row v-show='props.row.children.length === 0'>
+  <el-col :span='24' style='text-align:center; font-size:18px; color:rgb(56, 111, 143)'>该角色没有添加角色授权噢</el-col>
+</el-row>
+```
+
+#### 删除角色指定权限
+
+**根据tag标签的close事件设置方法，通过方法调用删除角色权限的接口**
+
+```js
+delRightOnRoleById (row, rightId) {
+  delRightOnRoleById(row.id, rightId)
+    .then(res => {
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+        // 由于删除成功后会返回删除后对应的数据，所以可以不刷新整个表格数据，而来更新
+        row.children = res.data.data
+      } else {
+        this.$message.success(res.data.meta.msg)
+      }
+    })
+}
+```
+
+**在删除后成功会发现当删除了二级对应的所有三级子项，二级便没有了三组子项，所以二级也就应当移除，同理，一级中的二级子项若是都没只有一个二级且没有三级子项，一级子项也应当移除**
+
+```js
+ delRightOnRoleById (row, rightId) {
+  delRightOnRoleById(row.id, rightId)
+    .then(res => {
+      if (res.data.meta.status === 200) {
+        // 当删除了一级时，会提示出三条成功提示，为了让其只显示一条则做以下处理
+        // 为了重置cnt=0,则需要在各个close事件重置cnt
+        if (this.cnt === 0) {
+          this.$message.success(res.data.meta.msg)
+          this.cnt++
+        }
+        // 由于删除成功后会返回删除后对应的数据，所以可以不刷新整个表格数据，而来更新
+        row.children = res.data.data
+        // 三级所有子项删除后，二级没有移除，当一级只有一个二级时且二级的三级子项并没有子项时，应当移除一级
+        row.children.forEach(first => {
+          if (first.children.length === 0) { // 一级权限下没有二级
+            // 调用删除方法
+            this.delRightOnRoleById(row, first.id)
+          } else {
+            first.children.forEach(second => { // 二级权限下没有三级
+              if (second.children.length === 0) {
+                this.delRightOnRoleById(row, second.id)
+              }
+            })
+          }
+        })
+      } else {
+        this.$message.success(res.data.meta.msg)
+      }
+    })
+}
+```
+
