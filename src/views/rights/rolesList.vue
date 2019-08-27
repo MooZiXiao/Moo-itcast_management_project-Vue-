@@ -74,6 +74,7 @@
     <!-- 角色授权对话框 -->
     <el-dialog title="权限分配" :visible.sync="grantDialogFormVisible">
       <el-tree
+        ref='tree'
         :default-expand-all='true'
         :data="rightsData"
         show-checkbox
@@ -83,18 +84,17 @@
       ></el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="grantDialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="grantDialogFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addRightsOnRoles">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
-import { getAllRoles, delRightOnRoleById } from '@/api/rolesIndex.js'
+import { getAllRoles, delRightOnRoleById, addRightsOnRoles } from '@/api/rolesIndex.js'
 import { getAllRights } from '@/api/rightsIndex.js'
 export default {
   data () {
     return {
-      //
       // 对象，显示的文本
       defaultProps: {
         label: 'authName',
@@ -113,6 +113,29 @@ export default {
     }
   },
   methods: {
+    // 角色权限的添加
+    async addRightsOnRoles () {
+      // 获得勾选id
+      let arr = this.$refs.tree.getCheckedNodes()
+      // 遍历arr，拼接arr
+      let temp = []
+      for (let i = 0; i < arr.length; i++) {
+        temp.push(arr[i].id + ',' + arr[i].pid)
+      }
+      // 将temp中的数据对象，转化成数组
+      temp = temp.join(',').split(',')
+      // 数组去重
+      temp = [...new Set(temp)]
+      // 调用接口
+      let res = await addRightsOnRoles(this.rowId, temp.join(','))
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+        this.grantDialogFormVisible = false
+        this.init()
+      } else {
+        this.$message.success(res.data.meta.msg)
+      }
+    },
     // 显示角色授权对话框
     showGrantDialog (row) {
       this.grantDialogFormVisible = true
@@ -123,7 +146,7 @@ export default {
       // 显示权限数据
       getAllRights('tree')
         .then(res => {
-          console.log(res)
+          // console.log(res)
           if (res.data.meta.status === 200) {
             this.rightsData = res.data.data
           }
@@ -131,8 +154,9 @@ export default {
         .catch(err => {
           console.log(err)
         })
-
-      // 获得勾选的id
+      // 重置数据
+      this.checkArr.length = 0
+      // 获得已有权限的id
       row.children.forEach(first => {
         if (first.children.length > 0) {
           first.children.forEach(second => {
@@ -176,19 +200,23 @@ export default {
           this.$message.success(res.data.meta.msg)
         }
       })
+    },
+    // 封装获得所有角色函数
+    init () {
+      getAllRoles()
+        .then(res => {
+          // console.log(res)
+          if (res.data.meta.status === 200) {
+            this.rolesData = res.data.data
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
   },
   mounted () {
-    getAllRoles()
-      .then(res => {
-        // console.log(res)
-        if (res.data.meta.status === 200) {
-          this.rolesData = res.data.data
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.init()
   }
 }
 </script>

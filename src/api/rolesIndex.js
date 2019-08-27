@@ -14,3 +14,12 @@ export const delRightOnRoleById = (roleId, rightId) => {
     url: `roles/${roleId}/rights/${rightId}`
   })
 }
+
+// 在角色列表添加勾选的权限接口
+export const addRightsOnRoles = (roleId, rids) => {
+  return axios({
+    method: 'post',
+    url: `roles/${roleId}/rights`,
+    data: { rids }
+  })
+}

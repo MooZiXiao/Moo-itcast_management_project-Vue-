@@ -1415,7 +1415,9 @@ showGrantDialog (row) {
     .catch(err => {
       console.log(err)
     })
-  // 获得勾选的id
+  // 重置数据
+  this.checkArr.length = 0
+  // 获得已有权限的id
   row.children.forEach(first => {
     if (first.children.length > 0) {
       first.children.forEach(second => {
@@ -1427,6 +1429,36 @@ showGrantDialog (row) {
       })
     }
   })
+}
+```
+
+##### 角色授权的分配（添加权限）
+
+> 获得勾选的id，将id处理成接口文档要求的格式（rids：以 `,` 分割的权限 ID 列表）
+
+```js
+// 角色权限的添加
+async addRightsOnRoles () {
+  // 获得勾选id
+  let arr = this.$refs.tree.getCheckedNodes()
+  // 遍历arr，拼接arr
+  let temp = []
+  for (let i = 0; i < arr.length; i++) {
+    temp.push(arr[i].id + ',' + arr[i].pid)
+  }
+  // 将temp中的数据对象，转化成数组
+  temp = temp.join(',').split(',')
+  // 数组去重
+  temp = [...new Set(temp)]
+  // 调用接口（异步）
+  let res = await addRightsOnRoles(this.rowId, temp.join(','))
+  if (res.data.meta.status === 200) {
+    this.$message.success(res.data.meta.msg)
+    this.grantDialogFormVisible = false
+    this.init()
+  } else {
+    this.$message.success(res.data.meta.msg)
+  }
 }
 ```
 

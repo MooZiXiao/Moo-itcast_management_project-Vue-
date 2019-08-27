@@ -119,7 +119,7 @@
 </template>
 <script>
 import { getAllUsers, addUser, updateUserState, editUser, updateUserRole, delUserById } from '@/api/userList.js'
-import { getAllRoles } from '@/api/roleIndex.js'
+import { getAllRoles } from '@/api/rolesIndex.js'
 export default {
   data () {
     return {
