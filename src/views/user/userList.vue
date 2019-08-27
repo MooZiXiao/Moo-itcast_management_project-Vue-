@@ -185,9 +185,9 @@ export default {
               if (this.userData.length === 1) {
                 if (this.userobj.pagenum > 1) {
                   this.userobj.pagenum--
-                  this.init()
                 }
               }
+              this.init()
             } else {
               this.$message.error(res.data.meta.msg)
             }

@@ -1142,9 +1142,9 @@
             if (this.userData.length === 1) {
               if (this.userobj.pagenum > 1) {
                 this.userobj.pagenum--
-                this.init()
               }
             }
+            this.init()
           } else {
             this.$message.error(res.data.meta.msg)
           }
@@ -1383,6 +1383,50 @@ delRightOnRoleById (row, rightId) {
         this.$message.success(res.data.meta.msg)
       }
     })
+}
+```
+
+#### 角色授权
+
+> **点击角色授权按钮弹出授权对应的对话框**
+
+> **对话框中显示tree树形，且默认显示已有的权限**
+
+> **勾选对应的权限，点击确定加入对应勾选权限**
+
+> **成功后关闭对话框，更新页面**
+
+##### 角色授权默认显示
+
+```js
+// 显示角色授权对话框
+showGrantDialog (row) {
+  this.grantDialogFormVisible = true
+  // 获得对应行的角色id
+  this.rowId = row.id
+  // 显示权限数据
+  getAllRights('tree')
+    .then(res => {
+      console.log(res)
+      if (res.data.meta.status === 200) {
+        this.rightsData = res.data.data
+      }
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  // 获得勾选的id
+  row.children.forEach(first => {
+    if (first.children.length > 0) {
+      first.children.forEach(second => {
+        if (second.children.length > 0) {
+          second.children.forEach(third => {
+            this.checkArr.push(third.id)
+          })
+        }
+      })
+    }
+  })
 }
 ```
 
