@@ -616,7 +616,7 @@
 
   #### >>获得数据,显示数据
 
-  #####获得数据
+  ##### 获得数据
 
   ```js
   // 组件一加载就触发的钩子函数
@@ -660,6 +660,11 @@
             console.log(res)
             if (res.status === 200) {
               this.userData = res.data.data.users
+            } else if (res.data.meta.status === 401) {
+              this.$message.error(res.data.meta.msg + '请找主管分配权限')
+            } else if (res.data.meta.status === 400) {
+              this.$message.error(res.data.meta.msg)
+              this.$router.push({ name: 'login' })
             }
           })
           .catch(err => {
@@ -713,6 +718,9 @@
   // data 设置变量
   // 分页总记录数
   total: 0,
+  --------------------------------------
+  //init() status === 200
+  this.total = res.data.data.total
   --------------------------------------
   // methods
   // 分页
@@ -1459,6 +1467,92 @@ async addRightsOnRoles () {
   } else {
     this.$message.success(res.data.meta.msg)
   }
+}
+```
+
+##### 添加角色
+
+> **添加对话框，加入验证规则，创建添加接口（rolesIndex.js），点击对话框的确定时，需二次验证，调用添加接口，成功则提示，关闭对话框并更新页面，重置表单，错误也给出相应提示**
+
+```js
+addRole () {
+  // 二次验证
+  this.$refs.addform.validate(async valid => {
+    try {
+      let res = await addRole(this.addform)
+      if (res.data.meta.status === 201) {
+        this.$message.success(res.data.meta.msg)
+        this.addDialogFormVisible = false
+        this.init()
+        this.$refs.addform.resetFields()
+      } else {
+        this.$message.error(res.data.meta.msg)
+      }
+    } catch (exp) {
+      this.$message.error('服务器错误，请稍候再访问')
+    }
+  })
+}
+```
+
+##### 编辑角色
+
+>**添加编辑对话框，加入验证规则，点击显示对话框，对话框中显示默认数据，创建编辑接口（rolesIndex.js），点击对话框的确定时，需二次验证，调用添加接口，成功则提示，关闭对话框并更新页面，错误也给出相应提示**
+
+```js
+// 编辑对话框
+showEditDialog (row) {
+  this.editDialogFormVisible = true
+  this.editform.id = row.id
+  this.editform.roleName = row.roleName
+  this.editform.roleDesc = row.roleDesc
+},
+// 编辑
+async editRole () {
+  try {
+    let res = await editRoleById(this.editform)
+    console.log(res)
+    if (res.data.meta.status === 200) {
+      this.$message.success(res.data.meta.msg)
+      this.editDialogFormVisible = false
+      this.init()
+    } else if (res.data.meta.status === 401) {
+      this.message.error(res.data.meta.msg + '请找主管分配权限！')
+    }
+  } catch (exp) {
+    this.$message.error('服务器错误，请稍候再试')
+  }
+}
+```
+
+##### 删除角色
+
+>**点击弹出提示，是否删除，确认则在确认按钮调用删除接口，并返回对应提示，成功且更新页面**
+
+```js
+delRole (id) {
+  this.$confirm('此操作将永久删除该角色, 是否继续?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      let res = await delRoleById(id)
+      if (res.data.meta.status === 200) {
+        this.$message.success(res.data.meta.msg)
+        this.init()
+      } else if (res.data.meta.status === 401) {
+        this.$message.error(res.data.meta.msg + '，请找主管分配权限')
+      }
+    } catch (exp) {
+      this.$message.error('服务器错误，请稍候再试')
+    }
+  }).catch(() => {
+    this.$message({
+      type: 'info',
+      message: '已取消删除'
+    })
+  })
 }
 ```
 

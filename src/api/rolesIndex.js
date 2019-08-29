@@ -23,3 +23,29 @@ export const addRightsOnRoles = (roleId, rids) => {
     data: { rids }
   })
 }
+
+// 添加角色
+export const addRole = (data) => {
+  return axios({
+    url: 'roles',
+    method: 'post',
+    data
+  })
+}
+
+// 编辑角色接口
+export const editRoleById = (data) => {
+  return axios({
+    method: 'put',
+    url: `roles/${data.id}`,
+    data
+  })
+}
+
+// 删除角色
+export const delRoleById = (id) => {
+  return axios({
+    url: `roles/${id}`,
+    method: 'delete'
+  })
+}

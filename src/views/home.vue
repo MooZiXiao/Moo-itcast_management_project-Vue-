@@ -60,7 +60,7 @@
         <el-header>
           <a href="javascript:;" class="toggle-btn myicon-menu"></a>
           <h2 class="system-title">木一了后台管理</h2>
-          <a href="javascript:;" class="exit">退出</a>
+          <a href="javascript:;" class="exit" @click="exit">退出</a>
         </el-header>
         <!-- 坑 -->
         <el-main>
@@ -78,6 +78,11 @@ export default {
     },
     handleClose (key, keyPath) {
       // console.log(key, keyPath)
+    },
+    // 退出
+    exit () {
+      localStorage.setItem('itcast_login_token', '')
+      this.$router.push({ name: 'login' })
     }
   }
 }
