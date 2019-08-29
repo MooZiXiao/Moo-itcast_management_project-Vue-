@@ -1556,3 +1556,38 @@ delRole (id) {
 }
 ```
 
+#### 6.3.左侧菜单权限
+
+> **home.vue组件一加载时便调用菜单接口**
+
+```js
+async mounted () {
+    try {
+        let res = await getAllMenus()
+        console.log(res)
+        if (res.data.meta.status === 200) {
+            this.menuData = res.data.data
+        }
+    } catch (exp) {
+        this.$message.error('服务器错误，请稍候再试')
+    }
+}
+```
+
+> **菜单显示设置**
+
+```html
+<el-submenu :index="first.id + ''" v-for="first in menuData" :key="first.id">
+    <template slot="title">
+        <i class="el-icon-menu"></i>
+        <span>{{first.authName}}</span>
+    </template>
+    <el-menu-item :index="'/home/'+ second.path" v-for="second in first.children" :key="second.id">
+        <template slot="title">
+            <i class="el-icon-check"></i>
+            <span>{{second.authName}}</span>
+        </template>
+    </el-menu-item>
+</el-submenu>
+```
+

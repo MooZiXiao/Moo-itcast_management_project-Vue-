@@ -3,11 +3,16 @@ import VueRouter from 'vue-router'
 import Login from '@/views/login.vue'
 import Home from '@/views/home.vue'
 import Welcome from '@/views/welcome.vue'
-import UserList from '@/views/user/userList.vue'
+import Users from '@/views/user/users.vue'
 import RightsList from '@/views/rights/rightsList.vue'
 import RolesList from '@/views/rights/rolesList.vue'
 
 Vue.use(VueRouter)
+
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push (location) {
+  return originalPush.call(this, location).catch(err => err)
+}
 
 export default new VueRouter({
   routes: [
@@ -33,9 +38,9 @@ export default new VueRouter({
           component: Welcome
         },
         {
-          name: 'userlist',
-          path: 'userlist',
-          component: UserList
+          name: 'users',
+          path: 'users',
+          component: Users
         },
         {
           name: 'rights',

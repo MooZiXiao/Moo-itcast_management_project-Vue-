@@ -2,54 +2,29 @@
   <div class="home">
     <el-container>
       <!-- 左边菜单项 -->
-      <el-aside width="200px">
+      <el-aside width="auto">
         <h1>
           <a href="javascript:;">LOGO</a>
         </h1>
         <el-menu
+          :collapse='isCollapse'
           :router="true"
           :unique-opened="true"
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
           background-color="#386f8f"
           text-color="#fff"
           active-background-color="#ccc"
           active-text-color="#ffd04b"
         >
-          <el-submenu index="1">
+          <el-submenu :index="first.id + ''" v-for="first in menuData" :key="first.id">
             <template slot="title">
               <i class="el-icon-menu"></i>
-              <span>用户管理</span>
+              <span>{{first.authName}}</span>
             </template>
-            <el-menu-item index="/home/userList">
+            <el-menu-item :index="'/home/'+ second.path" v-for="second in first.children" :key="second.id">
               <template slot="title">
                 <i class="el-icon-check"></i>
-                <span>用户列表</span>
-              </template>
-            </el-menu-item>
-            <el-menu-item index="1-2">
-              <template slot="title">
-                <i class="el-icon-check"></i>
-                <span>选项2</span>
-              </template>
-            </el-menu-item>
-          </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-menu"></i>
-              <span>权限管理</span>
-            </template>
-            <el-menu-item index="/home/rights">
-              <template slot="title">
-                <i class="el-icon-check"></i>
-                <span>权限列表</span>
-              </template>
-            </el-menu-item>
-            <el-menu-item index="/home/roles">
-              <template slot="title">
-                <i class="el-icon-check"></i>
-                <span>角色列表</span>
+                <span>{{second.authName}}</span>
               </template>
             </el-menu-item>
           </el-submenu>
@@ -58,7 +33,7 @@
       <el-container>
         <!-- 头部 -->
         <el-header>
-          <a href="javascript:;" class="toggle-btn myicon-menu"></a>
+          <a href="javascript:;" class="toggle-btn myicon-menu" @click="isCollapse=!isCollapse"></a>
           <h2 class="system-title">木一了后台管理</h2>
           <a href="javascript:;" class="exit" @click="exit">退出</a>
         </el-header>
@@ -71,18 +46,30 @@
   </div>
 </template>
 <script>
+import { getAllMenus } from '@/api/rightsIndex.js'
 export default {
+  data () {
+    return {
+      // 收缩展开
+      isCollapse: false,
+      menuData: []
+    }
+  },
   methods: {
-    handleOpen (key, keyPath) {
-      // console.log(key, keyPath)
-    },
-    handleClose (key, keyPath) {
-      // console.log(key, keyPath)
-    },
     // 退出
     exit () {
       localStorage.setItem('itcast_login_token', '')
       this.$router.push({ name: 'login' })
+    }
+  },
+  async mounted () {
+    try {
+      let res = await getAllMenus()
+      if (res.data.meta.status === 200) {
+        this.menuData = res.data.data
+      }
+    } catch (exp) {
+      this.$message.error('服务器错误，请稍候再试')
     }
   }
 }
@@ -90,7 +77,10 @@ export default {
 <style lang="less" scoped>
 .home {
   height: 100%;
-  .el-menu-admin:not(.el-menu--collapse) {
+  .el-menu{
+    width:auto
+  }
+  .el-menu:not(.el-menu--collapse) {
     width: 200px;
     min-height: 400px;
   }
@@ -108,11 +98,11 @@ export default {
   }
   h1 a {
     display: block;
-    width: 200px;
+    // width: 200px;
     height: 59px;
     text-indent: -9999px;
-    background: url("../assets/logo.png") -20px, #fff;
-    background-size: 240px 59px;
+    background: url("../assets/logo.png") -30px, #fff;
+    // background-size: 240px 59px;
     &:hover {
       background-color: #f1f1f1;
     }
@@ -138,8 +128,8 @@ export default {
   .el-menu-item.is-active {
     background-color: #044c5e !important;
   }
-  .el-submenu{
-    width: 200px !important
-  }
+  // .el-submenu{
+  //   width: 200px !important
+  // }
 }
 </style>
