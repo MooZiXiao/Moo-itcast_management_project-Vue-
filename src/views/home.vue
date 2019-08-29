@@ -7,6 +7,8 @@
           <a href="javascript:;">LOGO</a>
         </h1>
         <el-menu
+          :default-active='currentIndex'
+          @select="showMenu"
           :collapse='isCollapse'
           :router="true"
           :unique-opened="true"
@@ -50,15 +52,21 @@ import { getAllMenus } from '@/api/rightsIndex.js'
 export default {
   data () {
     return {
+      currentIndex: '',
       // 收缩展开
       isCollapse: false,
       menuData: []
     }
   },
   methods: {
+    showMenu (index, indexpath) {
+      this.currentIndex = index
+      localStorage.setItem('home_default_index', this.currentIndex)
+    },
     // 退出
     exit () {
-      localStorage.setItem('itcast_login_token', '')
+      localStorage.removeItem('itcast_login_token')
+      localStorage.removeItem('home_default_index')
       this.$router.push({ name: 'login' })
     }
   },
@@ -68,6 +76,7 @@ export default {
       if (res.data.meta.status === 200) {
         this.menuData = res.data.data
       }
+      this.currentIndex = localStorage.getItem('home_default_index')
     } catch (exp) {
       this.$message.error('服务器错误，请稍候再试')
     }

@@ -6,6 +6,7 @@ import Welcome from '@/views/welcome.vue'
 import Users from '@/views/user/users.vue'
 import RightsList from '@/views/rights/rightsList.vue'
 import RolesList from '@/views/rights/rolesList.vue'
+import Orders from '@/views/orders/orders.vue'
 
 Vue.use(VueRouter)
 
@@ -51,6 +52,11 @@ export default new VueRouter({
           name: 'roles',
           path: 'roles',
           component: RolesList
+        },
+        {
+          name: 'orders',
+          path: 'orders',
+          component: Orders
         }
       ]
     }

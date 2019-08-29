@@ -1591,3 +1591,41 @@ async mounted () {
 </el-submenu>
 ```
 
+### 7.订单管理
+
+#### 订单数据显示（只显示过滤器过滤时间及付款方式）
+
+>**utils文件夹下创建myfilters.js**
+
+```js
+// 过滤时间
+export const timeFormat = (time, spe) => {
+  time = new Date(time * 1000)
+  return time.getFullYear() + spe + time.getMonth() + spe + time.getDate()
+}
+// 付款方式
+export const payFormat = (val) => {
+  if (val === '0') {
+    return '未支付'
+  } else if (val === '1') {
+    return '支付宝'
+  } else if (val === '2') {
+    return '微信'
+  } else if (val === '3') {
+    return '银行卡'
+  }
+}
+```
+
+> **引入并使用全局过滤器**
+
+```html
+<el-table-column prop="create_time" label="下单时间">
+    <template slot-scope="scope">{{ scope.row.create_time | timeFormat('-') }}</template>
+</el-table-column>
+
+<el-table-column prop="pay_status" label="是否付款">
+    <template slot-scope="scope">{{ scope.row.pay_status | payFormat }}</template>
+</el-table-column>
+```
+
