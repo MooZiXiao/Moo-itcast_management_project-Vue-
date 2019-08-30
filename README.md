@@ -1604,7 +1604,7 @@ export const timeFormat = (time, spe) => {
   return time.getFullYear() + spe + time.getMonth() + spe + time.getDate()
 }
 // 付款方式
-export const payFormat = (val) => {
+export const orderPayFormat = (val) => {
   if (val === '0') {
     return '未支付'
   } else if (val === '1') {
@@ -1613,6 +1613,22 @@ export const payFormat = (val) => {
     return '微信'
   } else if (val === '3') {
     return '银行卡'
+  }
+}
+// 是否付款
+export const payStatusFormat = (val) => {
+  if (val === '0') {
+    return '未付款'
+  } else {
+    return '已付款'
+  }
+}
+// 是否发货
+export const isSendFormat = (val) => {
+  if (val === '是') {
+    return 1
+  } else if (val === '否') {
+    return 0
   }
 }
 ```
@@ -1624,8 +1640,129 @@ export const payFormat = (val) => {
     <template slot-scope="scope">{{ scope.row.create_time | timeFormat('-') }}</template>
 </el-table-column>
 
+<el-table-column prop="order_pay" label="订单支付">
+    <template slot-scope="scope">{{ scope.row.order_pay | orderPayFormat }}</template>
+</el-table-column>
+
 <el-table-column prop="pay_status" label="是否付款">
-    <template slot-scope="scope">{{ scope.row.pay_status | payFormat }}</template>
+    <template slot-scope="scope">{{ scope.row.pay_status | payStatusFormat }}</template>
 </el-table-column>
 ```
 
+> **创建获得数据接口并调用**
+
+```js
+// 封装
+async init () {
+  try {
+    let res = await getAllOrders(this.orderParams)
+    if (res.data.meta.status === 200) {
+      this.orderData = res.data.data.goods
+      this.total = res.data.data.total
+    } else if (res.data.meta.status === 401) {
+      this.$message.error(res.data.meta.msg + '，请找主管分配权限')
+    }
+  } catch (exp) {
+    this.$message.error('服务器错误，请稍候再试')
+  }
+}
+```
+
+#### 订单编辑
+
+> **点击订单编辑按钮，显示对话框，在对话框中显示对应的数据 - orders.vue - methods**
+
+```js
+// 显示对话框
+showEditDialog (row) {
+  this.editDialogFormVisible = true
+  this.editParams.id = row.order_id
+  this.editParams.is_send = row.is_send
+  this.editParams.order_pay = row.order_pay
+  this.editParams.order_price = row.order_price
+  this.editParams.order_number = row.order_number
+  this.editParams.pay_status = row.pay_status
+}
+```
+
+> **使用 el-radio-group ，通过v-model绑定默认显示的值，通过change事件获得选择了的值 - orders.vue - methods**
+
+```js
+// 获得单选值
+getIsSend (obj) {
+  this.editParams.is_send = obj
+},
+getOrderPay (obj) {
+  this.editParams.order_pay = obj
+},
+getPayStatus (obj) {
+  this.editParams.pay_status = obj
+}
+```
+
+> **二次验证数据 ，将是否发货的值过滤，调用接口，成功则提示+关闭对话框+更新页面数据 - orders.vue - methods**
+
+```js
+editOrder () {
+  // 二次验证
+  this.$refs.editform.validate(async valid => {
+    if (valid) {
+      try {
+        // 过滤是否发货
+        this.editParams.is_send = isSendFormat(this.editParams.is_send)
+        let res = await editOrderById(this.editParams)
+        if (res.data.meta.status === 201) {
+          this.$message.success(res.data.meta.msg)
+          this.editDialogFormVisible = false
+          this.init()
+        } else if (res.data.meta.status === 401) {
+          this.$message.error(res.data.meta.msg + '，请联系主管分配权限')
+        } else {
+          this.$message.error(res.data.meta.msg)
+        }
+      } catch (exp) {
+        this.$message.error('服务器异常')
+      }
+    } else {
+      this.$message.warning('请输入必填项')
+    }
+  })
+}
+```
+
+#### 订单详情
+
+> **点击按钮，显示对话框，创建获得详情接口，通过自定义模板传入当行数据，调用接口显示数据 - orders.vue - methods**
+
+```js
+async showDetailDialog (row) {
+  this.detailDialogTableVisible = true
+  try {
+    let res = await getOredrDetailById(row)
+    if (res.data.meta.status === 200) {
+      this.detailData = res.data.data
+      // 商品总价
+      this.totalPrice = getTotalPrice(this.detailData.goods)
+    } else if (res.data.meta.status === 401) {
+      this.$message.error(res.data.meta.msg + '，请联系主管分配权限')
+    }
+  } catch (exp) {
+    this.$message.error('服务器异常，请稍候再试')
+  }
+}
+```
+
+> 过滤总价 - myfilters.js**
+
+```js
+// 总价
+export const getTotalPrice = (arr) => {
+  if (arr) {
+    let total = 0
+    arr.forEach(e => {
+      total += e.goods_total_price
+    })
+    return total
+  }
+}
+```
