@@ -2,7 +2,7 @@
 export const timeFormat = (time, spe) => {
   // console.log(time)
   time = new Date(time * 1000)
-  return time.getFullYear() + spe + time.getMonth() + spe + time.getDate()
+  return time.getFullYear() + spe + (time.getMonth() + 1) + spe + time.getDate()
 }
 
 // 付款方式

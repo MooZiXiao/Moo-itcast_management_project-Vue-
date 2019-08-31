@@ -111,5 +111,6 @@ export default {
 <style lang="less" scoped>
 .el-breadcrumb {
   line-height: 45px;
+  font-size:18px;
 }
 </style>

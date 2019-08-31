@@ -1915,3 +1915,162 @@ export default {
 }
 ```
 
+#### 商品添加
+
+##### 商品图片
+
+> **图片上传前需判断上传的是否为对应图片格式**
+>
+> **通过 `accept` 来设置上传的格式**
+>
+> **通过图片上传前的钩子来判断 `beforeUpload`**
+
+```js
+accept='image/jpeg,image/png,image/gif'
+--------------------------------------------------------------
+beforeUpload (file) {
+  if (file.type.indexOf('image/') === -1) {
+    this.$message.warning('请上传符合的图片格式，如：jepg,png,gif')
+    return false
+  }
+}
+```
+
+> **由于图片的上传没有经过拦截器，所以需要设置请求头，获得token**
+
+```js
+:headers='setToken()'
+---------------------
+setToken () {
+  return { Authorization: localStorage.getItem('itcast_login_token') 	}
+}
+```
+
+> **图片上传成功的钩子**
+
+```js
+handSuccess (response, file, fileList) {
+  if (response.meta.status === 200) {
+    this.$message.success(response.meta.msg)
+    this.addForm.pics.push({ pic: response.data.tmp_path })
+  }
+}
+```
+
+> **由于点击移除时，虽然页面上对应的图片移除了，可按添加按钮时，对应的图片数据并没有移除，所以需要通过移除的钩子来处理 **
+
+```js
+ handleRemove (file, fileList) {
+     let tmp = file.response.data.tmp_path
+     this.addForm.pics.forEach((e, i) => {
+         if (e.pic === tmp) {
+             this.addForm.pics.splice(i, 1)
+         }
+     })
+ }
+```
+
+##### 商品参数 + 商品属性显示
+
+> **标签页选中时判断 `activeName` ，如果是1，则调用接口传入`many`参数，如果 是2，则调用接口传入 `only`参数**
+
+```js
+async handleClick () {
+  if (this.activeName === '1') {
+    try {
+      let res = await getAllParams(this.addForm.goods_cat[2], 'many')
+      console.log(res)
+      if (res.data.meta.status === 200) {
+        this.attrVals = res.data.data
+        // 设置attr_vals
+        this.attrVals.forEach(e => {
+          e.attr_vals = e.attr_vals.split(',')
+        })
+        console.log(this.attrVals)
+      }
+    } catch (exp) {
+      this.$message.error('服务器异常，请稍候再试')
+    }
+  } else if (this.activeName === '2') {
+    let res = await getAllParams(this.addForm.goods_cat[2], 'only')
+    console.log(res)
+    if (res.data.meta.status === 200) {
+      this.staticVals = res.data.data
+    }
+  }
+}
+```
+
+> **商品参数**
+
+```html
+<el-checkbox-group v-model="item.attr_vals" size="small" v-for='item in attrVals' :key='item.attr_id'>
+    <el-row style="margin-bottom:20px;">
+        <el-col :span="4" style='text-align:center'>
+            <el-tag style='border:0;font-size:18px;background:#fff;margin-right:15px;' v-show='item.attr_vals.length !== 0'>{{item.attr_name}}</el-tag>
+        </el-col>
+        <el-col :span="20">
+            <el-checkbox :label="subItem" border v-for='(subItem,index) in item.attr_vals' :key='index' style="margin-bottom:10px;"></el-checkbox>
+        </el-col>
+    </el-row>
+</el-checkbox-group>
+```
+
+> **商品属性**
+
+```html
+<el-form-item :label="item.attr_name" v-for='item in staticVals' :key='item.attr_id'>
+    <el-input v-model="item.attr_vals" readonly></el-input>
+</el-form-item>
+```
+
+##### 商品内容显示
+
+> **下载 Vue-Quill-Editor `npm install vue-quill-editor --save `**
+
+> **引入 + 注册 + 使用**
+
+```html
+<quillEditor v-model="addForm.goods_introduce"></quillEditor>
+```
+
+##### 商品添加
+
+> **创建接口，二次验证表单，成功则提示并跳到商品列表页面**
+
+```js
+addGoods () {
+  // 分类处理
+  this.addForm.goods_cat = this.addForm.goods_cat.join(',')
+  // 动态参数的处理
+  this.attrVals.forEach(e => {
+    let id = e.attr_id
+    e.attr_vals.forEach(v => {
+      this.addForm.attrs.push({
+        attr_id: id,
+        attr_value: v
+      })
+    })
+  })
+  // 二次验证
+  this.$refs.addForm.validate(async valid => {
+    if (valid) {
+      // 调用接口
+      try {
+        let res = await addGood(this.addForm)
+        if (res.data.meta.status === 201) {
+          this.$message.success(res.data.meta.msg)
+          this.$router.push({ name: 'list' })
+        } else if (res.data.meta.status === 401) {
+          this.$message.success(res.data.meta.msg + '，请联系主管分配权限')
+        }
+      } catch (exp) {
+        this.$message.error('服务器异常，请稍候再试')
+      }
+    } else {
+      this.$message.error('请输入必填项')
+    }
+  })
+}
+```
+
