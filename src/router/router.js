@@ -7,6 +7,9 @@ import Users from '@/views/user/users.vue'
 import RightsList from '@/views/rights/rightsList.vue'
 import RolesList from '@/views/rights/rolesList.vue'
 import Orders from '@/views/orders/orders.vue'
+import Goods from '@/views/goods/goods.vue'
+import List from '@/views/goods/list.vue'
+import Add from '@/views/goods/add.vue'
 
 Vue.use(VueRouter)
 
@@ -57,6 +60,24 @@ export default new VueRouter({
           name: 'orders',
           path: 'orders',
           component: Orders
+        },
+        {
+          name: 'goods',
+          path: 'goods',
+          component: Goods,
+          redirect: { name: 'list' },
+          children: [
+            {
+              name: 'list',
+              path: 'list',
+              component: List
+            },
+            {
+              name: 'add',
+              path: 'add',
+              component: Add
+            }
+          ]
         }
       ]
     }
